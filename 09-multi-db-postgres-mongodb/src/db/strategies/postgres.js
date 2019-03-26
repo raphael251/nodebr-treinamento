@@ -62,7 +62,7 @@ class Postgres extends ICrud {
             'raphaelpassos',
             'underthebridge',
             {
-                host: '192.168.99.100',
+                host: 'localhost',
                 dialect: 'postgres',
                 quoteIdentifiers: false,
                 operatorsAliases: false

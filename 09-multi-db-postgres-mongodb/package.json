@@ -1,5 +1,5 @@
 {
-  "name": "07-multi-db",
+  "name": "09-multi-db-postgres-mongodb",
   "version": "1.0.0",
   "description": "docker run \\\r     --name postgres \\\r     -e POSTGRES_USER=raphaelpassos \\\r     -e POSTGRES_PASSWORD=underthebridge \\\r     -e POSTGRES_DB=heroes \\\r     -p 5432:5432 \\\r     -d \\\r     postgres",
   "main": "index.js",
@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "mongoose": "^5.4.19",
     "pg": "^7.4.3",
     "pg-hstore": "^2.3.2",
     "sequelize": "^4.38.0"
