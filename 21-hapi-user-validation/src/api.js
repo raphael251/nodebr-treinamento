@@ -1,5 +1,7 @@
-//npm i hapi
-//npm i vision inert hapi-swagger
+// npm i hapi
+// npm i vision inert hapi-swagger
+// npm i hapi-auth-jwt2
+// npm i bcrypt
 
 const Hapi = require('hapi')
 const Context = require('./db/strategies/base/contextStrategy')
@@ -7,6 +9,9 @@ const MongoDb = require('./db/strategies/mongodb/mongodb')
 const HeroiSchema = require('./db/strategies/mongodb/schemas/heroiSchema')
 const HeroRoute = require('./routes/heroRoutes')
 const AuthRoute = require('./routes/authRoutes')
+
+const Postgress = require('./db/strategies/postgres/postgres')
+const UsuarioSchema = require('./db/strategies/postgres/schemas/usuarioSchema')
 
 const HapiSwagger = require('hapi-swagger')
 const Vision = require('vision')
@@ -27,6 +32,10 @@ async function main() {
     const connection = MongoDb.connect()
     const context = new Context(new MongoDb(connection, HeroiSchema))
     
+    const connectionPostgres = await Postgress.connect()
+    const usuarioSchema = await Postgress.defineModel(connectionPostgres, UsuarioSchema)
+    const contextPostgress = new Context(new Postgress(connectionPostgres, usuarioSchema))
+
     const swaggerOptions = {
         info: {
             title: 'API Herois - #CursoNodeBR',
@@ -50,9 +59,18 @@ async function main() {
         // options: {
         //     expiresIn: 20
         // },
-        validate: (dado, request) => {
+        validate: async (dado, request) => {
             //verifica no banco se usuario continua ativo
             //verifica no banco se o usuario continua pagando
+            const [result] = await contextPostgress.read({
+                username: dado.username.toLowerCase()
+            })
+
+            if (!result) {
+                return {
+                    isValid: false
+                }
+            }
 
             return {
                 isValid: true
@@ -64,7 +82,7 @@ async function main() {
 
     app.route([
         ...mapRoutes(new HeroRoute(context), HeroRoute.methods()),
-        ...mapRoutes(new AuthRoute(JWT_SECRET), AuthRoute.methods())
+        ...mapRoutes(new AuthRoute(JWT_SECRET, contextPostgress), AuthRoute.methods())
     ]
     )
 
